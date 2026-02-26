@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buloxdev.github.io/agent-eval/schemas/result.schema.json",
+  "title": "AgentEval Result",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "result_id",
+    "test_case_id",
+    "test_run_id",
+    "adapter",
+    "status",
+    "started_at",
+    "finished_at",
+    "duration_ms",
+    "summary",
+    "failure_categories",
+    "assertions",
+    "trace_summary",
+    "evidence",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "result_id": { "type": "string" },
+    "test_case_id": { "type": "string" },
+    "test_run_id": { "type": "string" },
+    "adapter": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pass", "fail", "error", "skipped"]
+    },
+    "started_at": { "type": "string" },
+    "finished_at": { "type": "string" },
+    "duration_ms": { "type": "integer", "minimum": 0 },
+    "summary": {
+      "type": "object",
+      "required": [
+        "assertions_total",
+        "assertions_passed",
+        "assertions_failed",
+        "assertions_warned",
+        "assertions_skipped",
+        "critical_failures"
+      ],
+      "properties": {
+        "assertions_total": { "type": "integer", "minimum": 0 },
+        "assertions_passed": { "type": "integer", "minimum": 0 },
+        "assertions_failed": { "type": "integer", "minimum": 0 },
+        "assertions_warned": { "type": "integer", "minimum": 0 },
+        "assertions_skipped": { "type": "integer", "minimum": 0 },
+        "critical_failures": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": true
+    },
+    "failure_categories": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "assertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "severity", "status", "message", "params", "observed", "evidence", "capability_check"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string" },
+          "severity": { "type": "string", "enum": ["critical", "warning"] },
+          "status": { "type": "string", "enum": ["pass", "fail", "warn", "skip"] },
+          "message": { "type": "string" },
+          "params": { "type": "object" },
+          "observed": { "type": "object" },
+          "evidence": {
+            "type": "object",
+            "properties": {
+              "event_refs": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            },
+            "additionalProperties": true
+          },
+          "capability_check": {
+            "type": "object",
+            "properties": {
+              "required": { "type": "array", "items": { "type": "string" } },
+              "available": { "type": "array", "items": { "type": "string" } },
+              "status": { "type": "string" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "trace_summary": {
+      "type": "object",
+      "required": ["trace_id", "status", "tool_calls", "retry_count", "timing_ms_total"],
+      "properties": {
+        "trace_id": { "type": ["string", "null"] },
+        "status": { "type": ["string", "null"] },
+        "tool_calls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["tool", "count"],
+            "properties": {
+              "tool": { "type": "string" },
+              "count": { "type": "integer", "minimum": 0 }
+            },
+            "additionalProperties": true
+          }
+        },
+        "retry_count": { "type": "integer", "minimum": 0 },
+        "timing_ms_total": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": true
+    },
+    "evidence": { "type": "object", "additionalProperties": true },
+    "artifacts": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": true
+}

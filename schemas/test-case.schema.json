@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buloxdev.github.io/agent-eval/schemas/test-case.schema.json",
+  "title": "AgentEval Test Case",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "title",
+    "adapter",
+    "mode",
+    "scenario",
+    "tools",
+    "assertions"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "id": { "type": "string" },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "adapter": { "type": "string" },
+    "mode": { "type": "string", "enum": ["replay", "live"] },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "adapter_input": {
+      "type": "object",
+      "properties": {
+        "replay_file": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "scenario": {
+      "type": "object",
+      "required": ["trigger"],
+      "properties": {
+        "group_id": { "type": ["string", "null"] },
+        "session_id": { "type": ["string", "null"] },
+        "trigger": { "type": "string", "enum": ["user_message", "scheduler"] },
+        "scheduler_context": { "type": ["object", "null"] },
+        "input_messages": { "type": "array" },
+        "prior_messages": { "type": "array" },
+        "memory_snapshot": { "type": ["object", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "tools": {
+      "type": "object",
+      "required": ["available", "fixtures"],
+      "properties": {
+        "available": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "fixtures": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "policy": { "type": ["object", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "severity", "params"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string" },
+          "severity": { "type": "string", "enum": ["critical", "warning"] },
+          "requires_capabilities": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "params": { "type": "object" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "expected": { "type": "object", "additionalProperties": true },
+    "reporting": {
+      "type": "object",
+      "properties": {
+        "save_trace": { "type": "boolean" },
+        "redact_fields": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

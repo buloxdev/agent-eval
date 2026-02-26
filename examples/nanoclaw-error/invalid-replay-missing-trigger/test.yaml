@@ -1,0 +1,45 @@
+schema_version: "0.1"
+
+id: "nanoclaw.error.invalid-replay-missing-trigger"
+title: "Error variant: invalid replay missing scenario.trigger"
+description: "Negative control for replay validation: replay bundle omits scenario.trigger and should return an error result."
+
+adapter: "nanoclaw"
+mode: "replay"
+tags:
+  - "nanoclaw"
+  - "error-path"
+  - "negative-control"
+
+adapter_input:
+  replay_file: "./replay.json"
+
+scenario:
+  group_id: "group-error"
+  session_id: "sess-error-002"
+  trigger: "user_message"
+  input_messages:
+    - role: "user"
+      content: "Test invalid replay handling."
+  prior_messages: []
+
+tools:
+  available: []
+  fixtures: []
+
+assertions:
+  - id: "placeholder"
+    type: "output_contains"
+    severity: "critical"
+    params:
+      any_of:
+        - "unreachable"
+
+expected:
+  outcome: "Runner should emit error result and exit 2 due to replay validation failure."
+  failure_categories:
+    - "framework error"
+
+reporting:
+  save_trace: false
+

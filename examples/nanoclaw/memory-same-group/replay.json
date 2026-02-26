@@ -1,0 +1,46 @@
+{
+  "schema_version": "0.1",
+  "adapter": "nanoclaw-replay",
+  "scenario": {
+    "group_id": "group-a",
+    "session_id": "sess-a-004",
+    "task_id": null,
+    "trigger": "user_message",
+    "scheduler_context": null
+  },
+  "capabilities": {
+    "supports_tool_trace": false,
+    "supports_memory_events": true,
+    "supports_scheduler_context": false,
+    "supports_container_metadata": false
+  },
+  "input_messages": [
+    {
+      "role": "user",
+      "content": "Summarize why agent evals matter for small teams."
+    }
+  ],
+  "script": [
+    {
+      "type": "memory_read",
+      "group_id": "group-a",
+      "source": "CLAUDE.md",
+      "path": "groups/group-a/CLAUDE.md"
+    },
+    {
+      "type": "final_output",
+      "role": "assistant",
+      "content": "- They catch regressions when prompts, tools, or logic change.\n- They make failures easier to debug by showing what behavior broke.\n- They improve reliability before shipping changes to users."
+    }
+  ],
+  "final_output": {
+    "role": "assistant",
+    "content": "- They catch regressions when prompts, tools, or logic change.\n- They make failures easier to debug by showing what behavior broke.\n- They improve reliability before shipping changes to users."
+  },
+  "status": "success",
+  "metrics": {
+    "timing_ms_total": 350,
+    "retry_count": 0,
+    "token_usage": null
+  }
+}

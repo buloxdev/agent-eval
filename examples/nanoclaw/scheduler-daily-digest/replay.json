@@ -1,0 +1,103 @@
+{
+  "schema_version": "0.1",
+  "adapter": "nanoclaw-replay",
+  "scenario": {
+    "group_id": "group-ops",
+    "session_id": "sched-sess-001",
+    "task_id": "task-daily-digest",
+    "trigger": "scheduler",
+    "scheduler_context": {
+      "task_id": "task-daily-digest",
+      "task_name": "Daily AI Digest",
+      "scheduled_for": "2026-02-24T09:00:00-08:00",
+      "timezone": "America/Los_Angeles"
+    }
+  },
+  "capabilities": {
+    "supports_tool_trace": true,
+    "supports_memory_events": false,
+    "supports_scheduler_context": true,
+    "supports_container_metadata": false
+  },
+  "input_messages": [],
+  "script": [
+    {
+      "type": "tool_call",
+      "tool": "web_search",
+      "call_id": "call-1",
+      "args": {
+        "query": "AI engineering news today"
+      }
+    },
+    {
+      "type": "tool_result",
+      "tool": "web_search",
+      "call_id": "call-1",
+      "success": true,
+      "fixture_id": "fx.web_search.daily_ai_digest",
+      "result": {
+        "items": [
+          {
+            "title": "Eval tooling improves agent regression testing",
+            "source": "DevNews",
+            "url": "https://example.com/eval",
+            "published_at": "2026-02-24"
+          }
+        ]
+      }
+    },
+    {
+      "type": "tool_call",
+      "tool": "web_fetch",
+      "call_id": "call-2",
+      "args": {
+        "url": "https://example.com/eval"
+      }
+    },
+    {
+      "type": "tool_result",
+      "tool": "web_fetch",
+      "call_id": "call-2",
+      "success": true,
+      "fixture_id": "fx.web_fetch.eval_article",
+      "result": {
+        "text": "Article excerpt on improvements in agent regression testing workflows. Teams are using these tools to catch behavior regressions earlier."
+      }
+    },
+    {
+      "type": "final_output",
+      "role": "assistant",
+      "content": "- Eval tooling improved regression testing workflows for agents.\n- Teams are using these tools to catch behavior regressions earlier."
+    },
+    {
+      "type": "tool_call",
+      "tool": "outbound_send",
+      "call_id": "call-3",
+      "args": {
+        "channel": "group-ops",
+        "content": "- Eval tooling improved regression testing workflows for agents.\n- Teams are using these tools to catch behavior regressions earlier."
+      }
+    },
+    {
+      "type": "tool_result",
+      "tool": "outbound_send",
+      "call_id": "call-3",
+      "success": true,
+      "fixture_id": "fx.outbound_send.success",
+      "result": {
+        "message_id": "msg-001",
+        "channel": "group-ops"
+      }
+    }
+  ],
+  "final_output": {
+    "role": "assistant",
+    "content": "- Eval tooling improved regression testing workflows for agents.\n- Teams are using these tools to catch behavior regressions earlier."
+  },
+  "status": "success",
+  "metrics": {
+    "timing_ms_total": 1640,
+    "retry_count": 0,
+    "token_usage": null
+  }
+}

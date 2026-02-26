@@ -1,0 +1,40 @@
+{
+  "schema_version": "0.1",
+  "adapter": "nanoclaw-replay",
+  "scenario": {
+    "group_id": "group-error",
+    "session_id": "sess-error-002",
+    "task_id": null,
+    "scheduler_context": null
+  },
+  "capabilities": {
+    "supports_tool_trace": true,
+    "supports_memory_events": false,
+    "supports_scheduler_context": false,
+    "supports_container_metadata": false
+  },
+  "input_messages": [
+    {
+      "role": "user",
+      "content": "Test invalid replay handling."
+    }
+  ],
+  "script": [
+    {
+      "type": "final_output",
+      "role": "assistant",
+      "content": "This replay should fail validation before assertions run."
+    }
+  ],
+  "final_output": {
+    "role": "assistant",
+    "content": "This replay should fail validation before assertions run."
+  },
+  "status": "success",
+  "metrics": {
+    "timing_ms_total": 100,
+    "retry_count": 0,
+    "token_usage": null
+  }
+}
+

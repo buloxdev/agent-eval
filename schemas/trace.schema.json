@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buloxdev.github.io/agent-eval/schemas/trace.schema.json",
+  "title": "AgentEval Trace",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "trace_id",
+    "test_case_id",
+    "test_run_id",
+    "adapter",
+    "capabilities",
+    "scenario",
+    "input_messages",
+    "events",
+    "final_output",
+    "status",
+    "metrics"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "trace_id": { "type": "string" },
+    "test_case_id": { "type": "string" },
+    "test_run_id": { "type": "string" },
+    "adapter": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "capabilities": {
+      "type": "object",
+      "properties": {
+        "supports_tool_trace": { "type": "boolean" },
+        "supports_memory_events": { "type": "boolean" },
+        "supports_scheduler_context": { "type": "boolean" },
+        "supports_container_metadata": { "type": "boolean" },
+        "supports_live_run": { "type": "boolean" },
+        "supports_replay": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "scenario": {
+      "type": "object",
+      "required": ["trigger"],
+      "properties": {
+        "group_id": { "type": ["string", "null"] },
+        "session_id": { "type": ["string", "null"] },
+        "task_id": { "type": ["string", "null"] },
+        "trigger": { "type": "string", "enum": ["user_message", "scheduler"] },
+        "scheduler_context": { "type": ["object", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "input_messages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "role": { "type": "string" },
+          "content": { "type": "string" }
+        },
+        "required": ["role", "content"],
+        "additionalProperties": true
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["event_id", "seq", "ts", "type", "actor", "data"],
+        "properties": {
+          "event_id": { "type": "string" },
+          "seq": { "type": "integer", "minimum": 1 },
+          "ts": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": [
+              "message_received",
+              "tool_call",
+              "tool_result",
+              "memory_read",
+              "memory_write",
+              "error",
+              "final_output"
+            ]
+          },
+          "actor": { "type": "string" },
+          "group_id": { "type": ["string", "null"] },
+          "session_id": { "type": ["string", "null"] },
+          "task_id": { "type": ["string", "null"] },
+          "agent_id": { "type": ["string", "null"] },
+          "parent_event_id": { "type": ["string", "null"] },
+          "data": { "type": "object" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "final_output": {
+      "type": "object",
+      "required": ["content"],
+      "properties": {
+        "role": { "type": ["string", "null"] },
+        "content": { "type": "string" },
+        "format_hint": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "status": {
+      "type": "string",
+      "enum": ["success", "partial", "failed", "blocked"]
+    },
+    "metrics": {
+      "type": "object",
+      "required": ["timing_ms_total"],
+      "properties": {
+        "timing_ms_total": { "type": "integer", "minimum": 0 },
+        "tool_call_count": { "type": ["integer", "null"], "minimum": 0 },
+        "retry_count": { "type": ["integer", "null"], "minimum": 0 },
+        "token_usage": { "type": ["object", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

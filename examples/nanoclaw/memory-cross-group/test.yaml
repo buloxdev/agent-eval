@@ -1,0 +1,85 @@
+schema_version: "0.1"
+
+id: "nanoclaw.memory.isolation.no-cross-group-leak"
+title: "Group B must not inherit Group A formatting preference"
+description: "Ensures group-scoped memory remains isolated and preferences from another group do not affect output."
+
+adapter: "nanoclaw"
+mode: "replay"
+tags:
+  - "nanoclaw"
+  - "memory"
+  - "isolation"
+  - "regression"
+
+adapter_input:
+  replay_file: "./replay.json"
+
+scenario:
+  group_id: "group-b"
+  session_id: "sess-b-002"
+  trigger: "user_message"
+  input_messages:
+    - role: "user"
+      content: "Explain why agent evals are useful in exactly 2 short paragraphs."
+  prior_messages: []
+  memory_snapshot:
+    source: "CLAUDE.md"
+    content: |
+      # Group Memory
+      No formatting preferences stored.
+  other_group_state:
+    - group_id: "group-a"
+      memory_snapshot:
+        source: "CLAUDE.md"
+        content: |
+          # Group Memory
+          User preference: responses should be brief and bullet-only.
+
+tools:
+  available: []
+  fixtures: []
+
+assertions:
+  - id: "no-cross-group-memory"
+    type: "no_cross_group_memory_use"
+    severity: "critical"
+    params:
+      current_group_id: "group-b"
+      forbidden_group_ids:
+        - "group-a"
+
+  - id: "two-paragraph-output"
+    type: "output_matches_format"
+    severity: "critical"
+    params:
+      format: "paragraphs"
+      exact_paragraphs: 2
+
+  - id: "not-bullets"
+    type: "output_omits"
+    severity: "critical"
+    params:
+      patterns:
+        - "^- "
+        - "^\\* "
+      regex: true
+
+  - id: "mentions-why-evals-help"
+    type: "output_contains"
+    severity: "warning"
+    params:
+      any_of:
+        - "regression"
+        - "reliability"
+        - "tool use"
+
+expected:
+  outcome: "Agent returns two paragraphs and does not apply Group A bullet-only preference."
+  failure_categories:
+    - "isolation breach"
+    - "memory leak"
+    - "output format regression"
+
+reporting:
+  save_trace: true

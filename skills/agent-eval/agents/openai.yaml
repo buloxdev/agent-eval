@@ -1,0 +1,4 @@
+interface:
+  display_name: "AgentEval"
+  short_description: "Write and validate agent replay evals"
+  default_prompt: "Use $agent-eval to create or debug an AgentEval replay test for my NanoClaw agent."

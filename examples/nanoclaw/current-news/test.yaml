@@ -1,0 +1,125 @@
+schema_version: "0.1"
+
+id: "nanoclaw.current-news.requires-web-search"
+title: "Current news query must use web tools and stay grounded"
+description: "Ensures the agent does not answer current-events questions from memory and does not fabricate fixture-unsupported claims."
+
+adapter: "nanoclaw"
+mode: "replay"
+tags:
+  - "nanoclaw"
+  - "tooling"
+  - "groundedness"
+  - "hallucination"
+  - "regression"
+
+adapter_input:
+  replay_file: "./replay.json"
+
+scenario:
+  group_id: "group-alpha"
+  session_id: "sess-001"
+  trigger: "user_message"
+  input_messages:
+    - role: "user"
+      content: "Summarize the latest AI news today in 3 bullets."
+  prior_messages: []
+
+tools:
+  available:
+    - "web_search"
+    - "web_fetch"
+  fixtures:
+    - id: "fx.web_search.current_ai_news"
+      tool: "web_search"
+      description: "Search results for current AI news"
+    - id: "fx.web_fetch.article_model_x"
+      tool: "web_fetch"
+      description: "Fetched excerpt for article A"
+
+assertions:
+  - id: "must-search-first"
+    type: "must_call_tool"
+    severity: "critical"
+    params:
+      tool: "web_search"
+
+  - id: "search-before-final"
+    type: "tool_call_order"
+    severity: "critical"
+    params:
+      before:
+        event_type: "tool_call"
+        tool: "web_search"
+      after:
+        event_type: "final_output"
+
+  - id: "search-query-looks-right"
+    type: "tool_args_match"
+    severity: "critical"
+    params:
+      tool: "web_search"
+      match:
+        required_keys:
+          - "query"
+        args_contains:
+          query: "AI news"
+        regex:
+          query: "latest.*today|today.*latest"
+
+  - id: "max-web-fetches"
+    type: "max_tool_calls"
+    severity: "warning"
+    params:
+      tool: "web_fetch"
+      max: 3
+
+  - id: "stop-after-fetch-success"
+    type: "stop_after_success"
+    severity: "warning"
+    params:
+      success_event:
+        event_type: "tool_result"
+        tool: "web_fetch"
+        success: true
+      forbid_following:
+        event_type: "tool_call"
+
+  - id: "three-bullet-format"
+    type: "output_matches_format"
+    severity: "critical"
+    params:
+      format: "bullet_list"
+      min_bullets: 3
+      max_bullets: 3
+
+  - id: "must-mention-model-x"
+    type: "output_contains"
+    severity: "warning"
+    params:
+      any_of:
+        - "Model X"
+
+  - id: "no-fake-reuters-claim"
+    type: "output_omits"
+    severity: "critical"
+    params:
+      patterns:
+        - "Reuters"
+
+  - id: "grounded-claims-only"
+    type: "claims_supported_by_fixtures"
+    severity: "critical"
+    params:
+      allowed_sources:
+        - "web_search"
+        - "web_fetch"
+
+expected:
+  outcome: "Agent searches before answering and stays within fixture-backed facts."
+  failure_categories:
+    - "bad tool use"
+    - "hallucination"
+
+reporting:
+  save_trace: true

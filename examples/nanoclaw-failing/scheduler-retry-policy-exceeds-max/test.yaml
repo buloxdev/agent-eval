@@ -1,0 +1,51 @@
+schema_version: "0.1"
+
+id: "nanoclaw.scheduler.daily-digest.failing.retry-policy-exceeds-max"
+title: "Failing variant: retry_policy_respected exceeds max_retries"
+description: "Negative control for retry_policy_respected: timeout-recovery replay retries web_fetch once, but assertion allows zero retries."
+
+adapter: "nanoclaw"
+mode: "replay"
+tags:
+  - "nanoclaw"
+  - "scheduler"
+  - "recovery"
+  - "regression"
+  - "failing-variant"
+  - "negative-control"
+
+adapter_input:
+  replay_file: "../../nanoclaw/scheduler-digest-timeout-recovery/replay.json"
+
+scenario:
+  group_id: "group-ops"
+  session_id: "sched-sess-002"
+  trigger: "scheduler"
+  input_messages: []
+  prior_messages: []
+
+tools:
+  available:
+    - "web_search"
+    - "web_fetch"
+    - "outbound_send"
+  fixtures: []
+
+assertions:
+  - id: "retry-policy-too-strict-negative-control"
+    type: "retry_policy_respected"
+    severity: "critical"
+    params:
+      tool: "web_fetch"
+      max_retries: 0
+      retry_on_error_types:
+        - "timeout"
+
+expected:
+  outcome: "Fails because the replay contains one retry of web_fetch but the assertion allows zero retries."
+  failure_categories:
+    - "negative control"
+    - "recovery failure"
+
+reporting:
+  save_trace: true

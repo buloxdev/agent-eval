@@ -1,0 +1,42 @@
+{
+  "schema_version": "0.1",
+  "adapter": "nanoclaw-replay",
+  "scenario": {
+    "group_id": "group-error",
+    "session_id": "sess-error-004",
+    "trigger": "user_message"
+  },
+  "capabilities": {
+    "supports_tool_trace": true,
+    "supports_memory_events": false,
+    "supports_scheduler_context": false,
+    "supports_container_metadata": false
+  },
+  "input_messages": [
+    {
+      "role": "user",
+      "content": "Test invalid tool_result call_id handling."
+    }
+  ],
+  "script": [
+    {
+      "type": "tool_result",
+      "tool": "web_search",
+      "call_id": "call-99",
+      "success": true,
+      "result": {
+        "items": []
+      }
+    }
+  ],
+  "final_output": {
+    "role": "assistant",
+    "content": "This output is unreachable because validation should fail first."
+  },
+  "status": "success",
+  "metrics": {
+    "timing_ms_total": 10,
+    "retry_count": 0,
+    "token_usage": null
+  }
+}

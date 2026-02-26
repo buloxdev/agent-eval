@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+PATTERNS = [
+  [/\/Users\/[A-Za-z0-9._-]+\//, "absolute macOS home path"],
+  [/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/, "email address"],
+  [/\b[A-Za-z0-9._-]+s-MacBook(?:-[A-Za-z0-9._-]+)?\b/, "local Mac hostname"],
+  [/your-email@example\.com/, "placeholder email text"]
+].freeze
+
+ALLOWLIST = [
+  /\bgit@github\.com\b/
+].freeze
+
+files = `git ls-files`.split("\n")
+violations = []
+
+files.each do |path|
+  next if path.start_with?("artifacts/") || path.start_with?(".worktrees/")
+
+  content = File.binread(path)
+  next unless content.valid_encoding?
+
+  PATTERNS.each do |regex, label|
+    content.each_line.with_index(1) do |line, line_no|
+      next unless line.match?(regex)
+      next if ALLOWLIST.any? { |allowed| line.match?(allowed) }
+
+      violations << {
+        path: path,
+        line: line_no,
+        label: label,
+        sample: line.strip[0, 160]
+      }
+    end
+  end
+end
+
+if violations.empty?
+  puts "Privacy smoke passed (#{files.size} tracked files scanned)"
+  exit 0
+end
+
+warn "Privacy smoke failed:"
+violations.each do |v|
+  warn "  - #{v[:path]}:#{v[:line]} [#{v[:label]}] #{v[:sample]}"
+end
+exit 1

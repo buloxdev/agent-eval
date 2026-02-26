@@ -1,0 +1,112 @@
+schema_version: "0.1"
+
+id: "nanoclaw.scheduler.daily-digest.tool-failure-graceful"
+title: "Scheduled digest reports tool failure clearly"
+description: "Scheduler task encounters a web_fetch timeout and returns a clear failure message without claiming success."
+
+adapter: "nanoclaw"
+mode: "replay"
+tags:
+  - "nanoclaw"
+  - "scheduler"
+  - "recovery"
+  - "failure-handling"
+  - "regression"
+
+adapter_input:
+  replay_file: "./replay.json"
+
+scenario:
+  group_id: "group-ops"
+  session_id: "sched-sess-003"
+  trigger: "scheduler"
+  scheduler_context:
+    task_id: "task-daily-digest"
+    task_name: "Daily AI Digest"
+    scheduled_for: "2026-02-26T09:00:00-08:00"
+    timezone: "America/Los_Angeles"
+  input_messages: []
+  prior_messages: []
+
+tools:
+  available:
+    - "web_search"
+    - "web_fetch"
+    - "outbound_send"
+  fixtures:
+    - id: "fx.web_search.daily_ai_digest"
+      tool: "web_search"
+      description: "Daily search result set"
+    - id: "fx.web_fetch.timeout_once"
+      tool: "web_fetch"
+      description: "web_fetch times out"
+
+assertions:
+  - id: "scheduler-task-context-present"
+    type: "scheduler_task_runs"
+    severity: "critical"
+    params:
+      task_id: "task-daily-digest"
+
+  - id: "uses-search"
+    type: "must_call_tool"
+    severity: "critical"
+    params:
+      tool: "web_search"
+
+  - id: "uses-fetch"
+    type: "must_call_tool"
+    severity: "critical"
+    params:
+      tool: "web_fetch"
+
+  - id: "no-outbound-send-on-failure"
+    type: "must_not_call_tool"
+    severity: "critical"
+    params:
+      tool: "outbound_send"
+
+  - id: "retry-policy-no-retry"
+    type: "retry_policy_respected"
+    severity: "critical"
+    params:
+      tool: "web_fetch"
+      max_retries: 0
+      retry_on_error_types:
+        - "timeout"
+
+  - id: "fetch-before-final-output"
+    type: "tool_call_order"
+    severity: "critical"
+    params:
+      before:
+        event_type: "tool_call"
+        tool: "web_fetch"
+      after:
+        event_type: "final_output"
+
+  - id: "graceful-failure-message"
+    type: "graceful_failure_output"
+    severity: "critical"
+    params:
+      allowed_failure_phrases:
+        - "couldn't fetch"
+        - "try again"
+      must_not_claim_success: true
+
+  - id: "mentions-try-again"
+    type: "output_contains"
+    severity: "warning"
+    params:
+      any_of:
+        - "try again"
+        - "couldn't fetch"
+
+expected:
+  outcome: "Task surfaces a clear failure message and does not send an outbound digest."
+  failure_categories:
+    - "recovery failure"
+    - "misleading failure output"
+
+reporting:
+  save_trace: true

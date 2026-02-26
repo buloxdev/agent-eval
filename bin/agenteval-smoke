@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "rbconfig"
+
+ROOT = File.expand_path("..", __dir__)
+
+def run_case(label, path, expected_exit)
+  puts
+  puts "== #{label} =="
+  puts "Running: ruby bin/agenteval run #{path}"
+
+  ok = system(RbConfig.ruby, File.join(ROOT, "bin", "agenteval"), "run", path, chdir: ROOT)
+  actual_exit = $?.exitstatus
+
+  if actual_exit == expected_exit
+    puts "OK: exit #{actual_exit} matched expected #{expected_exit}"
+    true
+  else
+    puts "FAIL: exit #{actual_exit} did not match expected #{expected_exit}"
+    puts "system() returned #{ok.inspect}"
+    false
+  end
+end
+
+results = []
+results << run_case("Passing examples", "examples/nanoclaw", 0)
+results << run_case("Failing regression variants", "examples/nanoclaw-failing", 1)
+results << run_case("Error-path variants", "examples/nanoclaw-error", 2)
+
+puts
+if results.all?
+  puts "Smoke suite passed"
+  exit 0
+else
+  puts "Smoke suite failed"
+  exit 1
+end

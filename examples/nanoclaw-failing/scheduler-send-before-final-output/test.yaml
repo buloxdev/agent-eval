@@ -1,0 +1,63 @@
+schema_version: "0.1"
+
+id: "nanoclaw.scheduler.daily-digest.failing.send-before-final-output"
+title: "Failing variant: scheduler requires outbound_send before final_output"
+description: "Negative control for runner/reporting: replay emits final_output before outbound_send, so ordering assertion should fail."
+
+adapter: "nanoclaw"
+mode: "replay"
+tags:
+  - "nanoclaw"
+  - "scheduler"
+  - "regression"
+  - "failing-variant"
+  - "negative-control"
+
+adapter_input:
+  replay_file: "../../nanoclaw/scheduler-daily-digest/replay.json"
+
+scenario:
+  group_id: "group-ops"
+  session_id: "sched-sess-001"
+  trigger: "scheduler"
+  input_messages: []
+  prior_messages: []
+
+tools:
+  available:
+    - "web_search"
+    - "web_fetch"
+    - "outbound_send"
+  fixtures: []
+
+assertions:
+  - id: "wrong-scheduler-task-id-negative-control"
+    type: "scheduler_task_runs"
+    severity: "critical"
+    params:
+      task_id: "task-wrong-id"
+
+  - id: "outbound-send-still-present"
+    type: "must_call_tool"
+    severity: "critical"
+    params:
+      tool: "outbound_send"
+
+  - id: "send-before-final-output-negative-control"
+    type: "tool_call_order"
+    severity: "critical"
+    params:
+      before:
+        event_type: "tool_call"
+        tool: "outbound_send"
+      after:
+        event_type: "final_output"
+
+expected:
+  outcome: "Fails because outbound_send occurs after final_output in the replay."
+  failure_categories:
+    - "negative control"
+    - "scheduler execution failure"
+
+reporting:
+  save_trace: true

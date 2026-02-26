@@ -1,0 +1,46 @@
+schema_version: "0.1"
+
+id: "nanoclaw.error.invalid-replay-unknown-tool-result-call-id"
+title: "Error variant: replay tool_result references unknown call_id"
+description: "Negative control for replay validation: tool_result.call_id has no prior matching tool_call."
+
+adapter: "nanoclaw"
+mode: "replay"
+tags:
+  - "nanoclaw"
+  - "error-path"
+  - "negative-control"
+
+adapter_input:
+  replay_file: "./replay.json"
+
+scenario:
+  group_id: "group-error"
+  session_id: "sess-error-004"
+  trigger: "user_message"
+  input_messages:
+    - role: "user"
+      content: "Test invalid tool_result call_id handling."
+  prior_messages: []
+
+tools:
+  available:
+    - "web_search"
+  fixtures: []
+
+assertions:
+  - id: "placeholder"
+    type: "output_contains"
+    severity: "critical"
+    params:
+      any_of:
+        - "unreachable"
+
+expected:
+  outcome: "Runner should emit error result and exit 2 due to replay tool_result referencing an unknown call_id."
+  failure_categories:
+    - "framework error"
+    - "replay validation"
+
+reporting:
+  save_trace: false

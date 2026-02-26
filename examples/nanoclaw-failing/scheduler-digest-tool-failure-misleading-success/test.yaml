@@ -1,0 +1,66 @@
+schema_version: "0.1"
+
+id: "nanoclaw.scheduler.daily-digest.failing.tool-failure-misleading-success"
+title: "Failing variant: tool failure output misleadingly claims success"
+description: "Negative control for graceful_failure_output: replay has a tool error but final output claims the digest was sent successfully."
+
+adapter: "nanoclaw"
+mode: "replay"
+tags:
+  - "nanoclaw"
+  - "scheduler"
+  - "failure-handling"
+  - "regression"
+  - "failing-variant"
+  - "negative-control"
+
+adapter_input:
+  replay_file: "./replay.json"
+
+scenario:
+  group_id: "group-ops"
+  session_id: "sched-sess-004"
+  trigger: "scheduler"
+  input_messages: []
+  prior_messages: []
+
+tools:
+  available:
+    - "web_search"
+    - "web_fetch"
+    - "outbound_send"
+  fixtures: []
+
+assertions:
+  - id: "scheduler-task-context-present"
+    type: "scheduler_task_runs"
+    severity: "critical"
+    params:
+      task_id: "task-daily-digest"
+
+  - id: "has-tool-error-path"
+    type: "must_call_tool"
+    severity: "critical"
+    params:
+      tool: "web_fetch"
+
+  - id: "graceful-failure-output-negative-control"
+    type: "graceful_failure_output"
+    severity: "critical"
+    params:
+      allowed_failure_phrases:
+        - "couldn't fetch"
+        - "try again"
+      must_not_claim_success: true
+      forbidden_success_phrases:
+        - "sent successfully"
+        - "completed successfully"
+
+expected:
+  outcome: "Fails because output claims success despite a tool error."
+  failure_categories:
+    - "negative control"
+    - "misleading failure output"
+
+reporting:
+  save_trace: true

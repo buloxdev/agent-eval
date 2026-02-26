@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "json"
+
+SCHEMA_DIR = File.expand_path("../schemas", __dir__)
+
+expected = %w[
+  test-case.schema.json
+  trace.schema.json
+  result.schema.json
+]
+
+errors = []
+
+unless Dir.exist?(SCHEMA_DIR)
+  warn "Missing schemas directory: #{SCHEMA_DIR}"
+  exit 1
+end
+
+expected.each do |name|
+  path = File.join(SCHEMA_DIR, name)
+  unless File.exist?(path)
+    errors << "missing schema file: #{path}"
+    next
+  end
+
+  begin
+    parsed = JSON.parse(File.read(path))
+  rescue JSON::ParserError => e
+    errors << "invalid JSON in #{path}: #{e.message}"
+    next
+  end
+
+  errors << "#{path}: missing $schema" unless parsed.is_a?(Hash) && parsed.key?("$schema")
+  errors << "#{path}: missing $id" unless parsed.is_a?(Hash) && parsed.key?("$id")
+  errors << "#{path}: missing type" unless parsed.is_a?(Hash) && parsed.key?("type")
+  errors << "#{path}: missing properties" unless parsed.is_a?(Hash) && parsed.key?("properties")
+end
+
+if errors.empty?
+  puts "Schema smoke passed (#{expected.size} schema files)"
+  exit 0
+end
+
+warn "Schema smoke failed:"
+errors.each { |e| warn "  - #{e}" }
+exit 1

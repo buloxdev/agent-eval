@@ -1,0 +1,47 @@
+{
+  "schema_version": "0.1",
+  "adapter": "nanoclaw-replay",
+  "scenario": {
+    "group_id": "group-b",
+    "session_id": "sess-b-002",
+    "task_id": null,
+    "trigger": "user_message",
+    "scheduler_context": null
+  },
+  "capabilities": {
+    "supports_tool_trace": false,
+    "supports_memory_events": true,
+    "supports_scheduler_context": false,
+    "supports_container_metadata": false
+  },
+  "input_messages": [
+    {
+      "role": "user",
+      "content": "Explain why agent evals are useful in exactly 2 short paragraphs."
+    }
+  ],
+  "script": [
+    {
+      "type": "memory_read",
+      "group_id": "group-b",
+      "source": "CLAUDE.md",
+      "path": "groups/group-b/CLAUDE.md"
+    },
+    {
+      "type": "final_output",
+      "role": "assistant",
+      "content": "Agent evals help small teams catch regressions when they change prompts, tools, or agent logic. They turn vague failures into repeatable tests that can run in CI and show exactly what broke.\n\nThey also improve trust by checking process behavior, not just final answers, including tool usage, hallucination constraints, and memory isolation. That makes agent systems easier to operate and debug as they grow."
+    }
+  ],
+  "final_output": {
+    "role": "assistant",
+    "content": "Agent evals help small teams catch regressions when they change prompts, tools, or agent logic. They turn vague failures into repeatable tests that can run in CI and show exactly what broke.\n\nThey also improve trust by checking process behavior, not just final answers, including tool usage, hallucination constraints, and memory isolation. That makes agent systems easier to operate and debug as they grow."
+  },
+  "status": "success",
+  "metrics": {
+    "timing_ms_total": 422,
+    "retry_count": 0,
+    "token_usage": null
+  }
+}
+

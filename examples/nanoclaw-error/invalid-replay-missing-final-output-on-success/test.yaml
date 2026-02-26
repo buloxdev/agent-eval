@@ -1,0 +1,46 @@
+schema_version: "0.1"
+
+id: "nanoclaw.error.invalid-replay-missing-final-output-on-success"
+title: "Error variant: success replay missing final output"
+description: "Negative control for replay validation: status is success but replay omits final_output.content and any final_output script step."
+
+adapter: "nanoclaw"
+mode: "replay"
+tags:
+  - "nanoclaw"
+  - "error-path"
+  - "negative-control"
+
+adapter_input:
+  replay_file: "./replay.json"
+
+scenario:
+  group_id: "group-error"
+  session_id: "sess-error-005"
+  trigger: "user_message"
+  input_messages:
+    - role: "user"
+      content: "Test missing final output on success."
+  prior_messages: []
+
+tools:
+  available:
+    - "web_search"
+  fixtures: []
+
+assertions:
+  - id: "placeholder"
+    type: "output_contains"
+    severity: "critical"
+    params:
+      any_of:
+        - "unreachable"
+
+expected:
+  outcome: "Runner should emit error result and exit 2 due to missing final_output.content when status is success."
+  failure_categories:
+    - "framework error"
+    - "replay validation"
+
+reporting:
+  save_trace: false

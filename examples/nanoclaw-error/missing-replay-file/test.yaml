@@ -1,0 +1,44 @@
+schema_version: "0.1"
+
+id: "nanoclaw.error.missing-replay-file"
+title: "Error variant: missing replay file returns framework error"
+description: "Negative control for runner error handling: adapter_input points to a non-existent replay file."
+
+adapter: "nanoclaw"
+mode: "replay"
+tags:
+  - "nanoclaw"
+  - "error-path"
+  - "negative-control"
+
+adapter_input:
+  replay_file: "./does-not-exist.json"
+
+scenario:
+  group_id: "group-error"
+  session_id: "sess-error-001"
+  trigger: "user_message"
+  input_messages:
+    - role: "user"
+      content: "Test missing replay handling."
+  prior_messages: []
+
+tools:
+  available: []
+  fixtures: []
+
+assertions:
+  - id: "placeholder"
+    type: "output_contains"
+    severity: "critical"
+    params:
+      any_of:
+        - "unreachable"
+
+expected:
+  outcome: "Runner should emit error result and exit 2."
+  failure_categories:
+    - "framework error"
+
+reporting:
+  save_trace: false

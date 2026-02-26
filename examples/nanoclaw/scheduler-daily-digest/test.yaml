@@ -1,0 +1,117 @@
+schema_version: "0.1"
+
+id: "nanoclaw.scheduler.daily-digest.single-outbound"
+title: "Scheduled digest task runs and sends one outbound message"
+description: "Uses core v1 assertions to validate scheduler-path behavior before scheduler-specific assertions land."
+
+adapter: "nanoclaw"
+mode: "replay"
+tags:
+  - "nanoclaw"
+  - "scheduler"
+  - "tooling"
+  - "regression"
+
+adapter_input:
+  replay_file: "./replay.json"
+
+scenario:
+  group_id: "group-ops"
+  session_id: "sched-sess-001"
+  trigger: "scheduler"
+  scheduler_context:
+    task_id: "task-daily-digest"
+    task_name: "Daily AI Digest"
+    scheduled_for: "2026-02-24T09:00:00-08:00"
+    timezone: "America/Los_Angeles"
+  input_messages: []
+  prior_messages: []
+  memory_snapshot:
+    source: "CLAUDE.md"
+    content: |
+      # Group Memory
+      Daily digest should be concise and useful for engineers.
+
+tools:
+  available:
+    - "web_search"
+    - "web_fetch"
+    - "outbound_send"
+  fixtures:
+    - id: "fx.web_search.daily_ai_digest"
+      tool: "web_search"
+      description: "Daily search result set"
+    - id: "fx.web_fetch.eval_article"
+      tool: "web_fetch"
+      description: "Article excerpt"
+    - id: "fx.outbound_send.success"
+      tool: "outbound_send"
+      description: "Outbound message delivery success"
+
+assertions:
+  - id: "scheduler-task-context-present"
+    type: "scheduler_task_runs"
+    severity: "critical"
+    params:
+      task_id: "task-daily-digest"
+
+  - id: "uses-search"
+    type: "must_call_tool"
+    severity: "critical"
+    params:
+      tool: "web_search"
+
+  - id: "sends-outbound-message"
+    type: "must_call_tool"
+    severity: "critical"
+    params:
+      tool: "outbound_send"
+
+  - id: "search-before-send"
+    type: "tool_call_order"
+    severity: "critical"
+    params:
+      before:
+        event_type: "tool_call"
+        tool: "web_search"
+      after:
+        event_type: "tool_call"
+        tool: "outbound_send"
+
+  - id: "single-send-via-max-calls"
+    type: "max_tool_calls"
+    severity: "critical"
+    params:
+      tool: "outbound_send"
+      max: 1
+
+  - id: "single-send-via-scheduler-outbound-count"
+    type: "scheduler_outbound_count"
+    severity: "critical"
+    params:
+      exact: 1
+
+  - id: "grounded-summary"
+    type: "claims_supported_by_fixtures"
+    severity: "critical"
+    params:
+      allowed_sources:
+        - "web_search"
+        - "web_fetch"
+
+  - id: "digest-format-bullets"
+    type: "output_matches_format"
+    severity: "warning"
+    params:
+      format: "bullet_list"
+      min_bullets: 1
+
+expected:
+  outcome: "Scheduled task performs search/fetch, then sends exactly one outbound digest."
+  failure_categories:
+    - "scheduler execution failure"
+    - "bad tool use"
+    - "duplicate outbound messages"
+
+reporting:
+  save_trace: true

@@ -1,0 +1,46 @@
+{
+  "schema_version": "0.1",
+  "adapter": "nanoclaw-replay",
+  "scenario": {
+    "group_id": "group-error",
+    "session_id": "sess-error-005",
+    "trigger": "user_message"
+  },
+  "capabilities": {
+    "supports_tool_trace": true,
+    "supports_memory_events": false,
+    "supports_scheduler_context": false,
+    "supports_container_metadata": false
+  },
+  "input_messages": [
+    {
+      "role": "user",
+      "content": "Test missing final output on success."
+    }
+  ],
+  "script": [
+    {
+      "type": "tool_call",
+      "tool": "web_search",
+      "call_id": "call-1",
+      "args": {
+        "query": "test query"
+      }
+    },
+    {
+      "type": "tool_result",
+      "tool": "web_search",
+      "call_id": "call-1",
+      "success": true,
+      "result": {
+        "items": []
+      }
+    }
+  ],
+  "status": "success",
+  "metrics": {
+    "timing_ms_total": 15,
+    "retry_count": 0,
+    "token_usage": null
+  }
+}

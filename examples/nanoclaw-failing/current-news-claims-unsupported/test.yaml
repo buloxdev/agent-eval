@@ -1,0 +1,55 @@
+schema_version: "0.1"
+
+id: "nanoclaw.current-news.failing.claims-unsupported-by-fixtures"
+title: "Failing variant: current-news claims not supported by selected fixtures"
+description: "Negative control for claims_supported_by_fixtures: restrict allowed sources to web_fetch so search-derived bullets become unsupported."
+
+adapter: "nanoclaw"
+mode: "replay"
+tags:
+  - "nanoclaw"
+  - "regression"
+  - "failing-variant"
+  - "negative-control"
+  - "groundedness"
+
+adapter_input:
+  replay_file: "../../nanoclaw/current-news/replay.json"
+
+scenario:
+  group_id: "group-alpha"
+  session_id: "sess-001"
+  trigger: "user_message"
+  input_messages:
+    - role: "user"
+      content: "Summarize the latest AI news today in 3 bullets."
+  prior_messages: []
+
+tools:
+  available:
+    - "web_search"
+    - "web_fetch"
+  fixtures: []
+
+assertions:
+  - id: "uses-web-fetch"
+    type: "must_call_tool"
+    severity: "critical"
+    params:
+      tool: "web_fetch"
+
+  - id: "claims-must-be-supported-by-web-fetch-only-negative-control"
+    type: "claims_supported_by_fixtures"
+    severity: "critical"
+    params:
+      allowed_sources:
+        - "web_fetch"
+
+expected:
+  outcome: "Fails because final bullets include claims only present in web_search results, not web_fetch excerpt."
+  failure_categories:
+    - "negative control"
+    - "hallucination"
+
+reporting:
+  save_trace: true

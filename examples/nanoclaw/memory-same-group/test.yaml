@@ -1,0 +1,73 @@
+schema_version: "0.1"
+
+id: "nanoclaw.memory.same-group-recall.brief-bullets"
+title: "Same-group preference is recalled and honored"
+description: "Ensures a stored formatting preference in the same NanoClaw group is applied in a later turn."
+
+adapter: "nanoclaw"
+mode: "replay"
+tags:
+  - "nanoclaw"
+  - "memory"
+  - "preferences"
+  - "regression"
+
+adapter_input:
+  replay_file: "./replay.json"
+
+scenario:
+  group_id: "group-a"
+  session_id: "sess-a-004"
+  trigger: "user_message"
+  prior_messages:
+    - role: "user"
+      content: "From now on, keep responses brief and bullet-only."
+    - role: "assistant"
+      content: "Understood. I will keep responses brief and bullet-only."
+  input_messages:
+    - role: "user"
+      content: "Summarize why agent evals matter for small teams."
+  memory_snapshot:
+    source: "CLAUDE.md"
+    content: |
+      # Group Memory
+      User preference: responses should be brief and bullet-only.
+
+tools:
+  available: []
+  fixtures: []
+
+assertions:
+  - id: "same-group-preference-honored"
+    type: "memory_recall_same_group"
+    severity: "critical"
+    params:
+      expected_memory_fact: "responses should be brief and bullet-only"
+      group_id: "group-a"
+
+  - id: "brief-bullet-format"
+    type: "output_matches_format"
+    severity: "critical"
+    params:
+      format: "bullet_list"
+      min_bullets: 2
+      max_bullets: 4
+      max_sentences_per_bullet: 1
+
+  - id: "mentions-regression-or-reliability"
+    type: "output_contains"
+    severity: "warning"
+    params:
+      any_of:
+        - "regression"
+        - "reliability"
+
+expected:
+  outcome: "Agent answers in brief bullets and reflects same-group memory recall."
+  failure_categories:
+    - "memory recall failure"
+    - "output format regression"
+
+reporting:
+  save_trace: true
+

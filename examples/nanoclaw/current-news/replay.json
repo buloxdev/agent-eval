@@ -1,0 +1,95 @@
+{
+  "schema_version": "0.1",
+  "adapter": "nanoclaw-replay",
+  "scenario": {
+    "group_id": "group-alpha",
+    "session_id": "sess-001",
+    "task_id": null,
+    "trigger": "user_message",
+    "scheduler_context": null
+  },
+  "capabilities": {
+    "supports_tool_trace": true,
+    "supports_memory_events": false,
+    "supports_scheduler_context": false,
+    "supports_container_metadata": false
+  },
+  "input_messages": [
+    {
+      "role": "user",
+      "content": "Summarize the latest AI news today in 3 bullets."
+    }
+  ],
+  "script": [
+    {
+      "type": "tool_call",
+      "tool": "web_search",
+      "call_id": "call-1",
+      "args": {
+        "query": "latest AI news today"
+      }
+    },
+    {
+      "type": "tool_result",
+      "tool": "web_search",
+      "call_id": "call-1",
+      "success": true,
+      "fixture_id": "fx.web_search.current_ai_news",
+      "result": {
+        "items": [
+          {
+            "title": "Model X released with new agent features",
+            "source": "ExampleTech",
+            "url": "https://example.com/a",
+            "published_at": "2026-02-24"
+          },
+          {
+            "title": "Open-source eval tools gain traction",
+            "source": "DevNews",
+            "url": "https://example.com/b",
+            "published_at": "2026-02-24"
+          },
+          {
+            "title": "Enterprise teams test agent reliability workflows",
+            "source": "InfraDaily",
+            "url": "https://example.com/c",
+            "published_at": "2026-02-23"
+          }
+        ]
+      }
+    },
+    {
+      "type": "tool_call",
+      "tool": "web_fetch",
+      "call_id": "call-2",
+      "args": {
+        "url": "https://example.com/a"
+      }
+    },
+    {
+      "type": "tool_result",
+      "tool": "web_fetch",
+      "call_id": "call-2",
+      "success": true,
+      "fixture_id": "fx.web_fetch.article_model_x",
+      "result": {
+        "text": "Article excerpt about Model X and agent features."
+      }
+    },
+    {
+      "type": "final_output",
+      "role": "assistant",
+      "content": "- Model X released with new agent features.\n- Open-source eval tools are gaining traction.\n- Enterprise teams are testing agent reliability workflows."
+    }
+  ],
+  "final_output": {
+    "role": "assistant",
+    "content": "- Model X released with new agent features.\n- Open-source eval tools are gaining traction.\n- Enterprise teams are testing agent reliability workflows."
+  },
+  "status": "success",
+  "metrics": {
+    "timing_ms_total": 1432,
+    "retry_count": 0,
+    "token_usage": null
+  }
+}

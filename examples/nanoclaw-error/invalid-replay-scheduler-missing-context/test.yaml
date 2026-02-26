@@ -1,0 +1,44 @@
+schema_version: "0.1"
+
+id: "nanoclaw.error.invalid-replay-scheduler-missing-context"
+title: "Error variant: scheduler replay missing scheduler_context"
+description: "Negative control for replay validation: scenario.trigger is scheduler but scenario.scheduler_context is missing."
+
+adapter: "nanoclaw"
+mode: "replay"
+tags:
+  - "nanoclaw"
+  - "error-path"
+  - "negative-control"
+
+adapter_input:
+  replay_file: "./replay.json"
+
+scenario:
+  group_id: "group-error"
+  session_id: "sess-error-006"
+  trigger: "scheduler"
+  input_messages: []
+  prior_messages: []
+
+tools:
+  available:
+    - "web_search"
+  fixtures: []
+
+assertions:
+  - id: "placeholder"
+    type: "output_contains"
+    severity: "critical"
+    params:
+      any_of:
+        - "unreachable"
+
+expected:
+  outcome: "Runner should emit error result and exit 2 due to missing scheduler_context for a scheduler-triggered replay."
+  failure_categories:
+    - "framework error"
+    - "replay validation"
+
+reporting:
+  save_trace: false

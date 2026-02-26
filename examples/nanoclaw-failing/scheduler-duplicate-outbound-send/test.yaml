@@ -1,0 +1,60 @@
+schema_version: "0.1"
+
+id: "nanoclaw.scheduler.daily-digest.failing.duplicate-outbound-send"
+title: "Failing variant: scheduler duplicate outbound_send exceeds max_tool_calls"
+description: "Negative control for max_tool_calls: replay contains two outbound_send calls and should fail the single-send constraint."
+
+adapter: "nanoclaw"
+mode: "replay"
+tags:
+  - "nanoclaw"
+  - "scheduler"
+  - "regression"
+  - "failing-variant"
+  - "negative-control"
+
+adapter_input:
+  replay_file: "./replay.json"
+
+scenario:
+  group_id: "group-ops"
+  session_id: "sched-sess-001"
+  trigger: "scheduler"
+  input_messages: []
+  prior_messages: []
+
+tools:
+  available:
+    - "web_search"
+    - "web_fetch"
+    - "outbound_send"
+  fixtures: []
+
+assertions:
+  - id: "outbound-send-is-used"
+    type: "must_call_tool"
+    severity: "critical"
+    params:
+      tool: "outbound_send"
+
+  - id: "single-send-negative-control"
+    type: "max_tool_calls"
+    severity: "critical"
+    params:
+      tool: "outbound_send"
+      max: 1
+
+  - id: "single-send-scheduler-count-negative-control"
+    type: "scheduler_outbound_count"
+    severity: "critical"
+    params:
+      exact: 1
+
+expected:
+  outcome: "Fails because replay shows duplicate outbound_send calls."
+  failure_categories:
+    - "negative control"
+    - "duplicate outbound messages"
+
+reporting:
+  save_trace: true

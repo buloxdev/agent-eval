@@ -1,0 +1,61 @@
+schema_version: "0.1"
+
+id: "nanoclaw.current-news.failing.tool-args-mismatch"
+title: "Failing variant: current-news web_search query args mismatch"
+description: "Negative control for tool_args_match: requires a finance-focused query that does not match the replayed web_search args."
+
+adapter: "nanoclaw"
+mode: "replay"
+tags:
+  - "nanoclaw"
+  - "regression"
+  - "failing-variant"
+  - "negative-control"
+  - "tooling"
+
+adapter_input:
+  replay_file: "../../nanoclaw/current-news/replay.json"
+
+scenario:
+  group_id: "group-alpha"
+  session_id: "sess-001"
+  trigger: "user_message"
+  input_messages:
+    - role: "user"
+      content: "Summarize the latest AI news today in 3 bullets."
+  prior_messages: []
+
+tools:
+  available:
+    - "web_search"
+    - "web_fetch"
+  fixtures: []
+
+assertions:
+  - id: "has-web-search-call"
+    type: "must_call_tool"
+    severity: "critical"
+    params:
+      tool: "web_search"
+
+  - id: "incorrect-query-constraints-negative-control"
+    type: "tool_args_match"
+    severity: "critical"
+    params:
+      tool: "web_search"
+      match:
+        required_keys:
+          - "query"
+        args_contains:
+          query: "finance earnings"
+        regex:
+          query: "stock|market"
+
+expected:
+  outcome: "Fails because replayed query is 'latest AI news today' and does not satisfy the imposed finance query constraints."
+  failure_categories:
+    - "negative control"
+    - "bad tool use"
+
+reporting:
+  save_trace: true
